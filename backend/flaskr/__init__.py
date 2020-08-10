@@ -250,14 +250,36 @@ def create_app(test_config=None):
     TEST: In the "Play" tab, after a user selects "All" or a category,
     one question at a time is displayed, the user is allowed to answer
     and shown whether they were correct or not.
-    '''
+    [DONE]'''
     @app.route('/quizzes',methods=["POST"])
     def play_quiz():
-        body = request.get_json()
-        category = body.get('quiz_category')
-        prev = body.get('previous_questions')
-        print(type(category))
+        try:
+            body = request.get_json()
+            category = body.get('quiz_category')
+            prev = body.get('previous_questions')
 
+            # get questions in certain category or all categories
+            type = category.get('type')
+            if( type != "click"):
+                # check if it in the prevouis questions
+                cate_questions = Question.query.filter(Question.category == category.get('id')).filter(Question.id.notin_(prev)).all()
+            else:
+                # check if it in the prevouis questions
+                cate_questions = Question.query.filter(Question.id.notin_(prev)).all()
+
+            questions = [row.format() for row in cate_questions]
+            # get a random question
+            nextquestion = random.choice(questions)
+
+
+            # if there is questions left then return a successful jsonify object
+            if len(cate_questions) > 0 :
+                return jsonify({'success':True,'question':nextquestion})
+            else:
+                return jsonify({'success':True,'question':None})
+        except:
+            abort(404)
+            print(sys.exc_info())
 
 
 
