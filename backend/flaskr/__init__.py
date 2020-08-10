@@ -74,6 +74,7 @@ def create_app(test_config=None):
 
             if current_categories is None:
                 abort(404)
+                print(sys.exc_info())
             else:
                 return jsonify({
                             'success': True,
@@ -105,6 +106,7 @@ def create_app(test_config=None):
 
             if current_questions is None:
                 abort(404)
+                print(sys.exc_info())
             else:
                 return jsonify({
                         'success': True,
@@ -124,10 +126,10 @@ def create_app(test_config=None):
 
     TEST: When you click the trash icon next to a question, the question will be removed.
     This removal will persist in the database and when you refresh the page.
-    []'''
-    @app.route('/questions/<int:question_id>',methods=["DELETE"])
+    [DONE]'''
+    @app.route('/questions/<int:question_id>/delete',methods=["DELETE"])
     def delete_question(question_id):
-        target = Question.query.filter_by(Question.id == question_id).one_or_none()
+        target = Question.query.filter(Question.id == question_id).one_or_none()
         if target is None:
             abort(404)
         try:
@@ -151,7 +153,7 @@ def create_app(test_config=None):
     TEST: When you submit a question on the "Add" tab,
     the form will clear and the question will appear at the end of the last page
     of the questions list in the "List" tab.
-    '''
+    [DONE]'''
     @app.route('/questions',methods=["POST"])
     def create_question():
         try:
@@ -187,12 +189,15 @@ def create_app(test_config=None):
     TEST: Search by any phrase. The questions list will update to include
     only question that include that string within their question.
     Try using the word "title" to start.
-    '''
-    @app.route('/questions',methods=["POST","GET"])
+    [DONE]'''
+    @app.route('/search',methods=["POST","GET"])
     def search_question():
         try:
-            findings = Question.query.filter(Question.question.ilike('%{}%'.format(data['searchTerm']))).all()
-            results = [question.format() for question in findings]
+            body = request.get_json()
+            search_term = '%{}%'.format(body.get('searchTerm'))
+            print(search_term)
+            findings = Question.query.filter(Question.question.like(f'%{search_term}%')).all()
+            results = paginate_questions(request,findings)
 
             return jsonify({
                     'success': True,
@@ -211,22 +216,24 @@ def create_app(test_config=None):
     TEST: In the "List" tab / main screen, clicking on one of the
     categories in the left column will cause only questions of that
     category to be shown.
-    '''
+    [DONE]'''
     @app.route('/categories/<int:category_id>/questions',methods=["GET"])
     def get_questions_basedOn_category(category_id):
         try:
-            target_categ = Category.query.get(category_id)
-            target_ques = Question.query.filter_by(category == target_categ.type).all()
+            target_categ = Category.query.get(category_id).type
+            # target_ques = Question.query.filter_by(category == target_categ).all()
+            target_ques = Question.query.filter(Question.category == str(category_id)).all()
             questions = [question.format() for question in target_ques]
             if target_ques is None:
                 abort(404)
+                print(sys.exc_info())
             else:
                 return jsonify({
                         'success':True,
                         'questions':questions,
                         'total_questions': len(questions),
-                        'current_category':target_categ.format(),
-                        'categories':get_category_list()
+                        'current_category':category_id
+                        # 'categories':get_category_list()
                 })
         except:
             abort(404)
