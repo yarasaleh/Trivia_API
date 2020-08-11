@@ -88,7 +88,20 @@ GET '/categories'
 '6' : "Sports"}
 
 ```
+## Error Handling
+Errors are returned as JSON objects in the following format:
+```bash
+{
 
+    'success': False,
+    'error_code': 422,
+    'message': 'Unprocessable'
+
+}
+```
+The API will return three error types when requests fail:
+- 404: Not Found.
+- 422: Unprocessable
 
 
 ## Testing
