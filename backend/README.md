@@ -90,8 +90,7 @@ GET '/categories'
 ```
 ## Error Handling
 Errors are returned as JSON objects in the following format:
-```bash
-{
+```bash{
 
     'success': False,
     'error_code': 422,
@@ -102,6 +101,193 @@ Errors are returned as JSON objects in the following format:
 The API will return three error types when requests fail:
 - 404: Not Found.
 - 422: Unprocessable
+
+## Resource endpoint library
+### GET /categories
+- General:
+    - Returns a list of categories objects and success value.
+- Sample:```bash curl http://127.0.0.1:5000/categories``` <br>
+```{
+  "categories": {
+    "1": "Science",
+    "2": "Art",
+    "3": "Geography",
+    "4": "History",
+    "5": "Entertainment",
+    "6": "Sports"
+  },
+  "success": true
+}
+```
+### GET /questions
+- General:
+    - Returns a list of questions, categories, number of questions, number of questions and success value.
+    - Results are paginated in groups of 10. Include a request argument to choose page number, starting from 1.
+- Sample: ``` curl http://127.0.0.1:5000/questions``` <br>
+```{
+  "categories": {
+    "1": "Science",
+    "2": "Art",
+    "3": "Geography",
+    "4": "History",
+    "5": "Entertainment",
+    "6": "Sports"
+  },
+  "current_category": 6,
+  "questions": [
+    {
+      "answer": "Maya Angelou",
+      "category": "4",
+      "difficulty": 2,
+      "id": 5,
+      "question": "Whose autobiography is entitled 'I Know Why the Caged Bird Sings'?"
+    },
+    {
+      "answer": "Edward Scissorhands",
+      "category": "5",
+      "difficulty": 3,
+      "id": 6,
+      "question": "What was the title of the 1990 fantasy directed by Tim Burton about a young man with multi-bladed appendages?"
+    },
+    {
+      "answer": "Muhammad Ali",
+      "category": "4",
+      "difficulty": 1,
+      "id": 9,
+      "question": "What boxer's original name is Cassius Clay?"
+    },
+    .....
+  ],
+  "success": true,
+  "total_questions": 19
+}
+```
+### POST /questions
+- General:
+    - This will require the question and answer text,
+    category, and difficulty score.
+    - Returns the id of the new created question, a list of questions within the same page, the total number of question within the same page and success value.
+- Sample: ``` curl http://127.0.0.1:5000/questions?page=3 -X POST -H "Content-Type: application/json" -d '{"question":"Which Dutch graphic artist\u2013initials M C was a creator of optical illusions?", "answer":"Escher", "category":"2","difficulty":"1"}'```<br>
+``` {
+  "created": 28,
+  "questions": [
+      {
+        "answer": "Brazil",
+        "category": "6",
+        "difficulty": 3,
+        "id": 10,
+        "question": "Which is the only team to play in every soccer World Cup tournament?"
+      },
+      {
+        "answer": "Uruguay",
+        "category": "6",
+        "difficulty": 4,
+        "id": 11,
+        "question": "Which country won the first ever soccer World Cup in 1930?"
+      }
+  ],
+  "success": true,
+  "total_questions": 3
+}
+```
+
+### DELETE /questions/{question_id}/delete
+- General:
+    - This endpoint DELETE question using a question ID
+    - Returns the id of the deleted question and success value.
+- Sample: ``` curl -X DELETE http://127.0.0.1:5000/questions/26```<br>
+``` {
+  "deleted": 26,
+  "success": true
+}
+```
+### GET /search
+- General:
+    - searching based on a search term from frontend.
+    - It should return any questions for whom the search term
+    is a substring of the question.
+    - Returns a list of questions based on the search term, the total number of questions in the result and success value.
+- Sample: ``` curl http://127.0.0.1:5000/search -X GET -H "Content-Type: application/json" -d '{"searchTerm":"title"}'```<br>
+``` {
+  "questions": [
+    {
+      "answer": "Maya Angelou",
+      "category": "4",
+      "difficulty": 2,
+      "id": 5,
+      "question": "Whose autobiography is entitled 'I Know Why the Caged Bird Sings'?"
+    },
+    {
+      "answer": "Edward Scissorhands",
+      "category": "5",
+      "difficulty": 3,
+      "id": 6,
+      "question": "What was the title of the 1990 fantasy directed by Tim Burton about a young man with multi-bladed appendages?"
+    }
+  ],
+  "success": true,
+  "total_questions": 2
+}
+```
+### GET /categories/{category_id}/questions
+- General:
+    - Gets questions based on category.
+    - Returns a list of questions, the total number of questions, the id of the category and success value.
+- Sample: ``` curl http://127.0.0.1:5000/categories/2/questions```<br>
+``` {
+  "current_category": 2,
+  "questions": [
+    {
+      "answer": "Escher",
+      "category": "2",
+      "difficulty": 1,
+      "id": 16,
+      "question": "Which Dutch graphic artist\u2013initials M C was a creator of optical illusions?"
+    },
+    {
+      "answer": "Mona Lisa",
+      "category": "2",
+      "difficulty": 3,
+      "id": 17,
+      "question": "La Giaconda is better known as what?"
+    },
+    {
+      "answer": "One",
+      "category": "2",
+      "difficulty": 4,
+      "id": 18,
+      "question": "How many paintings did Van Gogh sell in his lifetime?"
+    },
+    {
+      "answer": "Jackson Pollock",
+      "category": "2",
+      "difficulty": 2,
+      "id": 19,
+      "question": "Which American artist was a pioneer of Abstract Expressionism, and a leading exponent of action painting?"
+    }
+    ......
+  ],
+  "success": true,
+  "total_questions": 9
+}
+```
+### POST /quizzes
+- General:
+    - This endpoint should take category (quiz_category) and previous question (previous_questions) parameters.
+    - Returns a random questions within the given category,
+    if provided, and that is not one of the previous questions.
+- Sample: ``` curl http://127.0.0.1:5000/quizzes -X POST -H "Content-Type: application/json" -d '{"previous_questions":[],"quiz_category":{"type":"Art","id":"2"}}'```<br>
+```{
+  "question": {
+    "answer": "Escher",
+    "category": "2",
+    "difficulty": 1,
+    "id": 27,
+    "question": "Which Dutch graphic artist\u2013initials M C was a creator of optical illusions?"
+  },
+  "success": true
+}
+```
 
 
 ## Testing
