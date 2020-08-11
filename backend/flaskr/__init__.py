@@ -77,7 +77,7 @@ def create_app(test_config=None):
         return jsonify({
             'success': False,
             'error_code': 422,
-            'message': 'Mehtod Not Allowed'
+            'message': 'Unprocessable'
             }),422
 
 #----------------------------------------------------------------------------#
@@ -164,6 +164,7 @@ def create_app(test_config=None):
             target.rollback()
             abort(422)
             print(sys.exc_info())
+
 
 
 
