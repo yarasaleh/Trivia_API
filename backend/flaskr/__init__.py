@@ -55,30 +55,7 @@ def create_app(test_config=None):
         for category in Category.query.all():
             categories[category.id] = category.type
         return categories
-#----------------------------------------------------------------------------#
-# Erorr Handling.
-#----------------------------------------------------------------------------#
 
-    '''
-    @TODO:
-    Create error handlers for all expected errors
-    including 404 and 422.
-    '''
-
-    @app.errorhandler(404)
-    def error_404(error):
-        return jsonify({
-                'success': False,
-                'error_code': 404,
-                'message' : 'Not Found'
-        }),404
-    @app.errorhandler(422)
-    def error_422(error):
-        return jsonify({
-            'success': False,
-            'error_code': 422,
-            'message': 'Unprocessable'
-            }),422
 
 #----------------------------------------------------------------------------#
 # Endpoints.
@@ -149,21 +126,23 @@ def create_app(test_config=None):
     TEST: When you click the trash icon next to a question, the question will be removed.
     This removal will persist in the database and when you refresh the page.
     [DONE]'''
-    @app.route('/questions/<int:question_id>/delete',methods=["DELETE"])
+    @app.route('/questions/<int:question_id>',methods=["DELETE"])
     def delete_question(question_id):
-        target = Question.query.filter(Question.id == question_id).one_or_none()
-        if target is None:
-            abort(404)
+
         try:
+            target = Question.query.filter(Question.id == question_id).one_or_none()
+            if target is None:
+                abort(404)
             target.delete()
             return jsonify({
                     'success': True,
                     'deleted' : question_id
                 }),200
         except:
-            target.rollback()
+            # target.rollback()
             abort(422)
             print(sys.exc_info())
+
 
 
 
@@ -189,18 +168,19 @@ def create_app(test_config=None):
                     difficulty = body.get('difficulty', None)
             )
             new_question.insert()
+            selection = Question.query.all()
+            current_questions = paginate_questions(request,selection)
         except:
             new_question.rollback()
             abort(422)
             print(sys.exc_info())
 
-        selection = Question.query.order_by(Question.id).all()
-        current_questions = paginate_questions(request,selection)
+
         return jsonify({
                 'success': True,
                 'created':new_question.id,
                 'questions': current_questions,
-                'total_questions': len(current_questions)
+                'total_questions': len(current_questions)+1
         })
 
 
@@ -304,6 +284,31 @@ def create_app(test_config=None):
         except:
             abort(404)
             print(sys.exc_info())
+
+#----------------------------------------------------------------------------#
+# Erorr Handling.
+#----------------------------------------------------------------------------#
+
+    '''
+    @TODO:
+    Create error handlers for all expected errors
+    including 404 and 422.
+    '''
+
+    @app.errorhandler(404)
+    def error_404(error):
+        return jsonify({
+                'success': False,
+                'error_code': 404,
+                'message' : 'Not Found'
+        }),404
+    @app.errorhandler(422)
+    def error_422(error):
+        return jsonify({
+            'success': False,
+            'error_code': 422,
+            'message': 'Unprocessable'
+            }),422
 
 
 

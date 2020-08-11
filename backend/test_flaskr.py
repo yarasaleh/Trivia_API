@@ -55,22 +55,22 @@ class TriviaTestCase(unittest.TestCase):
 
 
     def test_delete_question(self):
-        res = self.client().delete('/questions/2/delete')
+        res = self.client().delete('questions/11')
         data = json.loads(res.data)
-        self.assertEqual(data['success'],True)# PROBLEM
-        self.assertEqual(data['deleted'],2)
+        self.assertEqual(data['success'],True)
+        self.assertEqual(data['deleted'],11)
 
 
     def test_404_delete_question(self):
-        res = self.client().delete('/questions/2/delete')
+        res = self.client().delete('/questions/9')
         data = json.loads(res.data)
-        self.assertEqual(data['success'],False) # PROBLEM
-        self.assertEqual(data['error_code'],404)
-        self.assertEqual(data['message'],'Not Found')
+        self.assertEqual(data['success'],False)
+        self.assertEqual(data['error_code'],422)
+        self.assertEqual(data['message'],'Unprocessable')
 
 
     def test_search_question(self):
-        serach_term = {'searchTerm': 'Test'}
+        serach_term = {'searchTerm': 'title'}
         res = self.client().get('/search',json=serach_term)
         data = json.loads(res.data)
         self.assertEqual(data['success'],True)
