@@ -55,8 +55,30 @@ def create_app(test_config=None):
         for category in Category.query.all():
             categories[category.id] = category.type
         return categories
+#----------------------------------------------------------------------------#
+# Erorr Handling.
+#----------------------------------------------------------------------------#
 
+    '''
+    @TODO:
+    Create error handlers for all expected errors
+    including 404 and 422.
+    '''
 
+    @app.errorhandler(404)
+    def error_404(error):
+        return jsonify({
+                'success': False,
+                'error_code': 404,
+                'message' : 'Not Found'
+        }),404
+    @app.errorhandler(422)
+    def error_422(error):
+        return jsonify({
+            'success': False,
+            'error_code': 422,
+            'message': 'Mehtod Not Allowed'
+            }),422
 
 #----------------------------------------------------------------------------#
 # Endpoints.
@@ -104,7 +126,7 @@ def create_app(test_config=None):
             current_questions = paginate_questions(request,selection)
             current_categories = get_category_list()
 
-            if current_questions is None:
+            if len(current_questions) == 0:
                 abort(404)
                 print(sys.exc_info())
             else:
@@ -134,14 +156,15 @@ def create_app(test_config=None):
             abort(404)
         try:
             target.delete()
+            return jsonify({
+                    'success': True,
+                    'deleted' : question_id
+                }),200
         except:
             target.rollback()
             abort(422)
             print(sys.exc_info())
-        return jsonify({
-                'success': True,
-                'deleted' : question_id
-            }),200
+
 
 
     '''
@@ -280,6 +303,7 @@ def create_app(test_config=None):
         except:
             abort(404)
             print(sys.exc_info())
+
 
 
 
