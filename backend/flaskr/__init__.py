@@ -17,12 +17,12 @@ from models import setup_db, Question, Category
 def create_app(test_config=None):
     # create and configure the app
     app = Flask(__name__)
-    setup_db(app)
+    db = setup_db(app)
 
     '''
     @TODO: Set up CORS. Allow '*' for origins. Delete the sample route after completing the TODOs
     [DONE]'''
-    CORS(app)
+    cors = CORS(app, resources={r"/api/*": {"origins": "*"}})
 
     '''
     @TODO: Use the after_request decorator to set Access-Control-Allow
@@ -200,7 +200,7 @@ def create_app(test_config=None):
             body = request.get_json()
             search_term = '%{}%'.format(body.get('searchTerm'))
             print(search_term)
-            findings = Question.query.filter(Question.question.like(f'%{search_term}%')).all()
+            findings = Question.query.filter(Question.question.ilike(f'%{search_term}%')).all()
             results = paginate_questions(request,findings)
 
             return jsonify({
@@ -255,35 +255,38 @@ def create_app(test_config=None):
     one question at a time is displayed, the user is allowed to answer
     and shown whether they were correct or not.
     [DONE]'''
+
     @app.route('/quizzes',methods=["POST"])
     def play_quiz():
         try:
             body = request.get_json()
-            category = body.get('quiz_category')
-            prev = body.get('previous_questions')
 
-            # get questions in certain category or all categories
-            type = category.get('type')
-            if( type != "click"):
-                # check if it in the prevouis questions
-                cate_questions = Question.query.filter(Question.category == category.get('id')).filter(Question.id.notin_(prev)).all()
+            quiz_category = body.get('quiz_category')
+            previousQuestion = body.get('previous_questions')
+
+            if (quiz_category['type'] == 'click'):
+                questions = Question.query.filter(Question.id.notin_(previousQuestion)).all()
+
             else:
-                # check if it in the prevouis questions
-                cate_questions = Question.query.filter(Question.id.notin_(prev)).all()
+                questions = Question.query.filter_by(category=quiz_category['id']).all()
 
-            questions = [row.format() for row in cate_questions]
-            # get a random question
-            nextquestion = random.choice(questions)
-
-
-            # if there is questions left then return a successful jsonify object
-            if len(cate_questions) > 0 :
-                return jsonify({'success':True,'question':nextquestion})
+            available_questions = []
+            format_questions = [question.format() for question in questions]
+            for qn in format_questions:
+                if qn['id'] not in previousQuestion:
+                    available_questions.append(qn)
+            if len(available_questions) > 0:
+                selected_question = random.choice(available_questions)
+                return jsonify({
+                    'success' : True,
+                    'question' : selected_question
+                    })
             else:
                 return jsonify({'success':True,'question':None})
         except:
-            abort(404)
-            print(sys.exc_info())
+            abort(422)
+
+
 
 #----------------------------------------------------------------------------#
 # Erorr Handling.
