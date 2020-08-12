@@ -18,6 +18,14 @@ class TriviaTestCase(unittest.TestCase):
         self.database_path = "postgres://{}/{}".format('localhost:5432', self.database_name)
         setup_db(self.app, self.database_path)
 
+        # Sample question
+        self.new_question = {
+			'question': 'What type of paint does Bob Ross use?',
+			'answer': 'Oil',
+			'difficulty': '2',
+			'category': '2'
+		}
+
         # binds the app to the current context
         with self.app.app_context():
             self.db = SQLAlchemy()
@@ -33,6 +41,7 @@ class TriviaTestCase(unittest.TestCase):
     TODO
     Write at least one test for each test for successful operation and for expected errors.
     """
+    # Endpoint 1 [QUESTIONS]
     def test_paginate_questions(self):
         res = self.client().get('/questions?page=1')
         data = json.loads(res.data)
@@ -47,18 +56,25 @@ class TriviaTestCase(unittest.TestCase):
         self.assertEqual(data['error_code'],404)
         self.assertEqual(data['message'],'Not Found')
 
-
+    # Endpoint 2 [CATEGORIES]
     def test_get_categories(self):
         res = self.client().get('/categories')
         data = json.loads(res.data)
         self.assertEqual(data['success'],True)
 
+    def test_404_get_categories(self):
+        res = self.client().get('/categories/')
+        data = json.loads(res.data)
+        self.assertEqual(data['success'],False)
+        self.assertEqual(data['error_code'],404)
+        self.assertEqual(data['message'],'Not Found')
 
+    # Endpoint 3 [DELETE]
     def test_delete_question(self):
-        res = self.client().delete('questions/11')
+        res = self.client().delete('questions/14')
         data = json.loads(res.data)
         self.assertEqual(data['success'],True)
-        self.assertEqual(data['deleted'],11)
+        self.assertEqual(data['deleted'],14)
 
 
     def test_404_delete_question(self):
@@ -68,7 +84,7 @@ class TriviaTestCase(unittest.TestCase):
         self.assertEqual(data['error_code'],422)
         self.assertEqual(data['message'],'Unprocessable')
 
-
+    # Endpoint 4 [SEARCH]
     def test_search_question(self):
         serach_term = {'searchTerm': 'title'}
         res = self.client().get('/search',json=serach_term)
@@ -84,7 +100,7 @@ class TriviaTestCase(unittest.TestCase):
         self.assertEqual(data['error_code'],404)
         self.assertEqual(data['message'],'Not Found')
 
-
+    # Endpoint 5 [QUESTION BY CATEGORY]
     def test_category_question(self):
         res = self.client().get('/categories/2/questions')
         data = json.loads(res.data)
@@ -101,6 +117,26 @@ class TriviaTestCase(unittest.TestCase):
         self.assertEqual(data['message'],'Not Found')
 
 
+    # Endpoint 6 [CREATE QUESTION]
+    def test_create_question(self):
+        res = self.client().post('/questions',json=self.new_question)
+        data = json.loads(res.data)
+        self.assertEqual(data['success'],True)
+
+    def test_404_create_question(self):
+        invalid_question = {
+			'question': 'Where do you look to see the sky?',
+			'answer': 'Down',
+			'category': '16'
+		}
+        res = self.client().post('/questions',json=invalid_question)
+        data = json.loads(res.data)
+        self.assertEqual(data['success'],False)
+        self.assertEqual(data['error_code'],422)
+        self.assertEqual(data['message'],'Unprocessable')
+
+
+    # Endpoint 7 [PLAY QUIZ]
     def test_play_quiz(self):
         data = {
                 'previous_questions':[],
@@ -111,22 +147,18 @@ class TriviaTestCase(unittest.TestCase):
         }
         res = self.client().post('/quizzes',json=data)
         data = json.loads(res.data)
-        self.assertEqual(data['success'],True)# PROBLEM
+        self.assertEqual(data['success'],True)
 
 
     def test_404_play_quiz(self):
         data = {
-                'previous_questions':[],
-                'quiz_category':{
-                    'type': 'CS',
-                    'id': 12
-                }
+                'previous_questions':[]
         }
         res = self.client().post('/quizzes',json=data)
         data = json.loads(res.data)
         self.assertEqual(data['success'],False)
-        self.assertEqual(data['error_code'],404)
-        self.assertEqual(data['message'],'Not Found')
+        self.assertEqual(data['error_code'],422)
+        self.assertEqual(data['message'],'Unprocessable')
 
 
 

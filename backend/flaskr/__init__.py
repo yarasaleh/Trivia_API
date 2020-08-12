@@ -162,16 +162,16 @@ def create_app(test_config=None):
         try:
             body = request.get_json()
             new_question = Question(
-                    question = body.get('question', None),
-                    answer = body.get('answer', None),
-                    category = body.get('category', None),
-                    difficulty = body.get('difficulty', None)
+                    question = body.get('question'),
+                    answer = body.get('answer'),
+                    category = body.get('category'),
+                    difficulty = body.get('difficulty')
             )
             new_question.insert()
             selection = Question.query.all()
             current_questions = paginate_questions(request,selection)
         except:
-            new_question.rollback()
+            # db.session.rollback()
             abort(422)
             print(sys.exc_info())
 
