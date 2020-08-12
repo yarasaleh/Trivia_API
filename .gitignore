@@ -1,4 +1,16 @@
 .DS_store
+.DS_store?
+._*
+**/env
+.Trashes
+Thumbs.db
+ehthumbs.db
+.Spotlight-V100
 node_modules
 __pycache__
+<<<<<<< HEAD
 .DS_Store
+||||||| cd8768f6
+=======
+env
+>>>>>>> d5060e82d7d692be2e9c6b03b5620b7eb642b08d
