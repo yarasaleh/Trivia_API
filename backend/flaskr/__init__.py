@@ -282,7 +282,7 @@ def create_app(test_config=None):
                     'question' : selected_question
                     })
             else:
-                return jsonify({'success':True,'question':None})
+                return jsonify({'success':False,'question':None})
         except:
             abort(422)
 
